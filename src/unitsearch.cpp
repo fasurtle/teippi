@@ -574,9 +574,23 @@ void MainUnitSearch::ChangeUnitPosition_Finish()
 {
     if (left_high_invalid != -1)
     {
-        int low = NewFind(left_low_invalid), high = NewFind(left_high_invalid + 1);
-        std::sort(LeftSortHelper(this, left_positions.data() + low), LeftSortHelper(this, left_positions.data() + high));
-        for (int i = low; i < high; i++)
+        // Bug fix: the original code used NewFind() (std::lower_bound) to binary-search
+        // left_positions for the dirty range [low, high). Binary search requires a sorted
+        // array, but after many ChangeUnitPosition_Fast() calls in the same frame (e.g.,
+        // 8000+ units all moving), left_positions is severely unsorted. lower_bound on an
+        // unsorted array returns undefined results, so [low, high) is wrong, the partial
+        // sort covers the wrong range, and left_positions remains unsorted.
+        // This surfaces as an is_sorted assertion failure in FillCache when many units die
+        // simultaneously (e.g., a full-map nuke with 1000+ units on field).
+        //
+        // Fix: sort the entire array. left_positions.size() = Size() + 1 (Size real entries
+        // + 1 sentinel INT_MAX-1 at the end). Sort only [0, Size()) to keep the sentinel
+        // always last. For high unit counts the dirty range covers the whole array anyway,
+        // so performance is equivalent to the original in the worst case.
+        unsigned int count = Size();
+        std::sort(LeftSortHelper(this, left_positions.data()),
+                  LeftSortHelper(this, left_positions.data() + count));
+        for (unsigned int i = 0; i < count; i++)
         {
             Unit *unit = left_to_value[i];
             unit->search_left = i;

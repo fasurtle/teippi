@@ -1,6 +1,7 @@
 #ifndef COMMON_TYPES_H
 #define COMMON_TYPES_H
 
+#include <cstdint>
 #include <memory>
 #include <algorithm>
 #include <functional>
@@ -125,15 +126,22 @@ template <class C>
 class Array
 {
     public:
-        class Iterator : public std::iterator<std::random_access_iterator_tag, C>
+        class Iterator
         {
             public:
+                using iterator_category = std::random_access_iterator_tag;
+                using value_type = C;
+                using difference_type = std::ptrdiff_t;
+                using pointer = C *;
+                using reference = C &;
+
                 Iterator(C *c) : pos(c) {}
                 Iterator &operator++() { pos++; return *this; }
+                Iterator &operator--() { pos--; return *this; }
                 bool operator==(const Iterator &other) const { return other.pos == pos; }
                 bool operator!=(const Iterator &other) const { return !(*this == other); }
-                std::intptr_t operator-(const Iterator &other) const { return pos - other.pos; }
-                Iterator &operator+=(std::intptr_t amt) { pos += amt; return *this; }
+                std::ptrdiff_t operator-(const Iterator &other) const { return pos - other.pos; }
+                Iterator &operator+=(std::ptrdiff_t amt) { pos += amt; return *this; }
                 bool operator<(const Iterator &other) const { return pos < other.pos; }
                 C &operator*() { return *pos; }
                 C *ptr() { return pos; }
@@ -160,15 +168,22 @@ template <class C>
 class OwnedArray
 {
     public:
-        class Iterator : public std::iterator<std::random_access_iterator_tag, C>
+        class Iterator
         {
             public:
+                using iterator_category = std::random_access_iterator_tag;
+                using value_type = C;
+                using difference_type = std::ptrdiff_t;
+                using pointer = C *;
+                using reference = C &;
+
                 Iterator(C *c) : pos(c) {}
                 Iterator &operator++() { pos++; return *this; }
+                Iterator &operator--() { pos--; return *this; }
                 bool operator==(const Iterator &other) const { return other.pos == pos; }
                 bool operator!=(const Iterator &other) const { return !(*this == other); }
-                std::intptr_t operator-(const Iterator &other) const { return pos - other.pos; }
-                Iterator &operator+=(std::intptr_t amt) { pos += amt; return *this; }
+                std::ptrdiff_t operator-(const Iterator &other) const { return pos - other.pos; }
+                Iterator &operator+=(std::ptrdiff_t amt) { pos += amt; return *this; }
                 bool operator<(const Iterator &other) const { return pos < other.pos; }
                 bool operator>=(const Iterator &other) const { return !(pos < other.pos); }
                 C &operator*() { return *pos; }

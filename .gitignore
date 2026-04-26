@@ -13,3 +13,4 @@ x86/*
 *.sdf
 teippi.VC.db
 teippi.VC.VC.opendb
+build_release
